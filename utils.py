@@ -1,8 +1,14 @@
 import cv2 as cv
 import numpy as np
-from math import atan2, cos, sin, sqrt, pi
 from constants import *
 from utils import *
+
+
+def rotate(img, angle, rot_center=None):
+    if rot_center is None:
+        rot_center = (img.shape[1] // 2, img.shape[0] // 2)
+    rot_mat = cv.getRotationMatrix2D(rot_center, angle, 1.0)
+    return cv.warpAffine(img, rot_mat, img.shape[:2])
 
 
 def is_pixel_color_same(pixel1, pixel2):
