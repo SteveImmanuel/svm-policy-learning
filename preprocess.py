@@ -85,13 +85,15 @@ def draw_axes(img, axes, major_idx, minor_idx):
     cv.line(img, axes[3]['intersection'][0], axes[3]['intersection'][1], (0, 255, 0), 1)
 
 
-def generate_state_vector(img_path):
+def generate_state_vector(img_path, threshold=100, invert=True, show_img=False):
     img = cv.imread(img_path)
     blank = np.zeros(img.shape, np.uint8)
-
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    _, thresh = cv.threshold(gray, 100, 255, cv.THRESH_BINARY)
 
+    if invert:
+        gray = 255 - gray
+
+    _, thresh = cv.threshold(gray, threshold, 255, cv.THRESH_BINARY)
     contours, _ = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
     for i, points in enumerate(contours):
@@ -102,23 +104,30 @@ def generate_state_vector(img_path):
         # assume there will be only one object only
         cv.drawContours(blank, contours, i, CONTOUR_COLOR, 2)
         axes, major_idx, minor_idx, angle = extract_image_features(points, blank)
-        # draw_axes(blank, axes, major_idx, minor_idx)
 
+        if show_img:
+            draw_axes(blank, axes, major_idx, minor_idx)
+            cv.imshow('img', img)
+            cv.imshow('gray', gray)
+            cv.imshow('thresh', thresh)
+            cv.imshow('res', blank)
+            cv.waitKey(0)
+            cv.destroyAllWindows()
         return [
             axes[major_idx]['center'][0],
             axes[major_idx]['center'][1],
-            img[axes[major_idx]['center'][0]][axes[major_idx]['center'][1]][0],
+            img[axes[major_idx]['center'][1]][axes[major_idx]['center'][0]][0],
             axes[major_idx]['len'],
             axes[minor_idx]['len'],
             cos(angle),
             sin(angle),
-            img[axes[2]['center'][0]][axes[2]['center'][1]][0],
+            img[axes[2]['center'][1]][axes[2]['center'][0]][0],
             axes[2]['len'],
-            img[axes[3]['center'][0]][axes[3]['center'][1]][0],
+            img[axes[3]['center'][1]][axes[3]['center'][0]][0],
             axes[3]['len'],
         ]
 
 
 if __name__ == '__main__':
-    state_vector = generate_state_vector('test_images/3.png')
+    state_vector = generate_state_vector('test_images/4.png', 50, invert=True, show_img=True)
     print(state_vector)
