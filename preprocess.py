@@ -120,7 +120,7 @@ def generate_state_vector(img_path, img_ref_path, threshold=100, invert=True, sh
             cv.imshow('res', blank)
             cv.waitKey(0)
             cv.destroyAllWindows()
-        return [
+        return np.array([
             axes[major_idx]['center'][0],
             axes[major_idx]['center'][1],
             img[axes[major_idx]['center'][1]][axes[major_idx]['center'][0]][0],
@@ -132,7 +132,7 @@ def generate_state_vector(img_path, img_ref_path, threshold=100, invert=True, sh
             axes[2]['len'],
             img[axes[3]['center'][1]][axes[3]['center'][0]][0],
             axes[3]['len'],
-        ]
+        ])
 
 
 if __name__ == '__main__':

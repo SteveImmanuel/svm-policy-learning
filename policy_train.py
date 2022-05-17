@@ -62,6 +62,7 @@ def get_regressors(state_vectors, action_vectors, epsilon=0.1):
         regressors[i] = svm.SVR(epsilon=epsilon)
         regressors[i].fit(state_vectors, action_vectors[:, i])
 
+    print('Trained regressors')
     return regressors
 
 
@@ -72,6 +73,8 @@ def predict_actions(regressors, state_vectors):
 
 
 if __name__ == '__main__':
+    from preprocess import *
+
     state_vector_path = input('State vector filepath (dummy_data/state_vectors.demo): '
                               ) or 'dummy_data/state_vectors.demo'
     action_vector_path = input('Action vector filepath (dummy_data/action_vectors.demo): '
@@ -80,5 +83,14 @@ if __name__ == '__main__':
     state_vectors, action_vectors = load_demonstrations(state_vector_path, action_vector_path)
     c_state_vectors, c_action_vectors = filter_demonstrations(state_vectors, action_vectors)
     regressors = get_regressors(c_state_vectors, c_action_vectors)
-    output = predict_actions(regressors, state_vectors)
-    print(output[0])
+
+    state_vector_test = generate_state_vector(
+        'test_images/7.jpg',
+        'test_images/7_ref.jpg',
+        50,
+        invert=False,
+        show_img=False,
+    )
+    output = predict_actions(regressors, [state_vector_test])
+    print('State vector: ', state_vector_test)
+    print('Action vector: ', output)
