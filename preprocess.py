@@ -85,10 +85,15 @@ def draw_axes(img, axes, major_idx, minor_idx):
     cv.line(img, axes[3]['intersection'][0], axes[3]['intersection'][1], (0, 255, 0), 1)
 
 
-def generate_state_vector(img_path, threshold=100, invert=True, show_img=False):
+def generate_state_vector(img_path, img_ref_path, threshold=100, invert=True, show_img=False):
     img = cv.imread(img_path)
-    blank = np.zeros(img.shape, np.uint8)
-    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    img_ref = cv.imread(img_ref_path)
+    img_subtract = img - img_ref
+
+    assert img.shape == img_ref.shape, 'Mismatch image and ref image dimensions'
+
+    blank = np.zeros(img_subtract.shape, np.uint8)
+    gray = cv.cvtColor(img_subtract, cv.COLOR_BGR2GRAY)
 
     if invert:
         gray = 255 - gray
@@ -108,6 +113,8 @@ def generate_state_vector(img_path, threshold=100, invert=True, show_img=False):
         if show_img:
             draw_axes(blank, axes, major_idx, minor_idx)
             cv.imshow('img', img)
+            cv.imshow('img_ref', img_ref)
+            cv.imshow('img - img_ref', img - img_ref)
             cv.imshow('gray', gray)
             cv.imshow('thresh', thresh)
             cv.imshow('res', blank)
@@ -129,5 +136,11 @@ def generate_state_vector(img_path, threshold=100, invert=True, show_img=False):
 
 
 if __name__ == '__main__':
-    state_vector = generate_state_vector('test_images/4.png', 50, invert=True, show_img=True)
+    state_vector = generate_state_vector(
+        'test_images/7.jpg',
+        'test_images/7_ref.jpg',
+        50,
+        invert=False,
+        show_img=True,
+    )
     print(state_vector)
