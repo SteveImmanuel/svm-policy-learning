@@ -1,8 +1,6 @@
 import numpy as np
 import math
 
-# state xa ya za ha la wa cos sin hb wb hc wc
-# action px py pz d1x d1y d1z d2x d2y d2z d3x d3y d3z f pre spt1 spt2 spt3
 np.random.seed(2022)
 
 
@@ -21,15 +19,22 @@ def gen_random_state_vector():
 
 
 def gen_random_action_vector():
-    raise NotImplementedError()
+    px = np.random.rand() * 5
+    py = np.random.rand() * 5
+    pz = np.random.rand() * 5
+    rx = np.random.rand() * 0.02
+    ry = np.random.rand() * 0.02
+    rz = np.random.rand() * 0.02
+    f = np.random.rand() * .5
+    pre = np.random.rand() * .5
+    spt1 = np.random.rand() * 20
+    spt2 = np.random.rand() * 20
+    spt3 = np.random.rand() * 20
+    return [px, py, pz, rx, ry, rz, f, pre, spt1, spt2, spt3]
 
 
 if __name__ == '__main__':
     state_vect = gen_random_state_vector()
     print(state_vect)
-    state_vect = gen_random_state_vector()
-    print(state_vect)
-    state_vect = gen_random_state_vector()
-    print(state_vect)
-    state_vect = gen_random_state_vector()
-    print(state_vect)
+    action_vect = gen_random_action_vector()
+    print(action_vect)
