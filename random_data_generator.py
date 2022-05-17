@@ -34,7 +34,20 @@ def gen_random_action_vector():
 
 
 if __name__ == '__main__':
-    state_vect = gen_random_state_vector()
-    print(state_vect)
-    action_vect = gen_random_action_vector()
-    print(action_vect)
+    import pickle
+
+    state_vectors = []
+    action_vectors = []
+
+    for i in range(600):
+        state_vect = gen_random_state_vector()
+        state_vectors.append(state_vect)
+
+        action_vect = gen_random_action_vector()
+        action_vectors.append(action_vect)
+
+        with open('dummy_data/state_vectors.demo', 'wb') as f:
+            pickle.dump(state_vectors, f)
+
+        with open('dummy_data/action_vectors.demo', 'wb') as f:
+            pickle.dump(action_vectors, f)
