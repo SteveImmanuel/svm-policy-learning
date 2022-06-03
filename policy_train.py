@@ -12,34 +12,17 @@ action: px py pz rx ry rz f pre spt1 spt2 spt3
 """
 
 
-def load_demonstrations(
-    state_vector_path='dummy_data/state_vectors.demo',
-    action_vector_path='dummy_data/action_vectors.demo',
-):
-    with open(state_vector_path, 'rb') as f:
-        state_vectors = np.array(pickle.load(f))
-
-    with open(action_vector_path, 'rb') as f:
-        action_vectors = np.array(pickle.load(f))
-
-    assert state_vectors.shape[0] == action_vectors.shape[
-        0], 'Mismatch number of state and action pairs'
-
-    print(f'Loaded {len(state_vectors)} demonstrations')
-    return state_vectors, action_vectors
-
-
 def filter_demonstrations(state_vectors, action_vectors, vd=0.5, vs=0.5):
     assert state_vectors.shape[0] == action_vectors.shape[
         0], 'Mismatch number of state and action pairs'
 
     demonstration_vectors = np.concatenate((state_vectors, action_vectors), axis=1)
 
-    demo_clf = svm.OneClassSVM(tol=vd)
+    demo_clf = svm.OneClassSVM(nu=vd)
     demo_clf.fit(demonstration_vectors)
     demonstrations_score = demo_clf.predict(demonstration_vectors)
 
-    state_clf = svm.OneClassSVM(tol=vs)
+    state_clf = svm.OneClassSVM(nu=vs)
     state_clf.fit(state_vectors)
     states_score = state_clf.predict(state_vectors)
 
@@ -75,22 +58,28 @@ def predict_actions(regressors, state_vectors):
 if __name__ == '__main__':
     from preprocess import *
 
-    state_vector_path = input('State vector filepath (dummy_data/state_vectors.demo): '
-                              ) or 'dummy_data/state_vectors.demo'
-    action_vector_path = input('Action vector filepath (dummy_data/action_vectors.demo): '
-                               ) or 'dummy_data/action_vectors.demo'
-
-    state_vectors, action_vectors = load_demonstrations(state_vector_path, action_vector_path)
-    c_state_vectors, c_action_vectors = filter_demonstrations(state_vectors, action_vectors)
-    regressors = get_regressors(c_state_vectors, c_action_vectors)
-
-    state_vector_test = generate_state_vector(
-        'test_images/7.jpg',
-        'test_images/7_ref.jpg',
-        50,
-        invert=False,
-        show_img=False,
+    state_vectors, action_vectors = load_demo()
+    c_state_vectors, c_action_vectors = filter_demonstrations(
+        state_vectors,
+        action_vectors,
+        vd=0.5,
+        vs=0.5,
     )
-    output = predict_actions(regressors, [state_vector_test])
-    print('State vector: ', state_vector_test)
-    print('Action vector: ', output)
+
+    # last_idx = int(len(c_action_vectors) * 0.9)
+    # train_state = c_state_vectors[0:last_idx]
+    # train_action = c_action_vectors[0:last_idx]
+    # val_state = c_state_vectors[last_idx:]
+    # val_action = c_action_vectors[last_idx:]
+
+    regressors = get_regressors(c_state_vectors, c_action_vectors, epsilon=0.1)
+
+    output = predict_actions(regressors, c_state_vectors)
+    error = output - c_action_vectors
+    error = np.linalg.norm(error, 2, axis=1)
+    error = np.mean(error)
+
+    print(f'Average error: {error}')
+
+    with open('models/150_demo_weights.model', 'wb') as f:
+        pickle.dump(regressors, f)

@@ -1,7 +1,8 @@
+import os
+import json
 import cv2 as cv
 import numpy as np
 from constants import *
-from utils import *
 
 
 def rotate(img, angle, rot_center=None):
@@ -90,3 +91,37 @@ def find_intersection(
         index = np.argmax(vect_dot_product)
 
     return candidates[index]
+
+
+def load_demo(demo_dir='demonstrations'):
+    demos = os.listdir(demo_dir)
+
+    state_vectors = []
+    action_vectors = []
+
+    for demo in demos:
+        if not os.path.isdir(os.path.join(demo_dir, demo)):
+            continue
+
+        path = os.path.join(demo_dir, demo, 'state-action.txt')
+        f = open(path)
+        state_action = json.load(f)
+        state_vect = np.array(state_action['state'])
+        action_vect = np.array([
+            *state_action['p'],
+            state_action['roll'],
+            state_action['pitch'],
+            state_action['yaw'],
+            *state_action['f'],
+            state_action['pre'],
+            np.average(state_action['spt1']),
+            np.average(state_action['spt2']),
+            np.average(state_action['spt3']),
+        ])
+        state_vectors.append(state_vect)
+        action_vectors.append(action_vect)
+
+    state_vectors = np.array(state_vectors)
+    action_vectors = np.array(action_vectors)
+
+    return state_vectors, action_vectors
